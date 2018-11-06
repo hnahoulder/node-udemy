@@ -1,7 +1,8 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
-const compression  = require('compression');
+// const compression = require('compression');
+const {success, error} = require('./function');
 
 /*
 app.use((req, res, next) =>{
@@ -18,14 +19,14 @@ app.use((req, res, next) => {
     next();
 });
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: true}));
 const members = [
     {
-        id: 1 ,
+        id: 1,
         name: 'John'
     },
     {
-        id: 2 ,
+        id: 2,
         name: 'Julie'
     },
     {
@@ -35,7 +36,15 @@ const members = [
 
 ];
 app.get('/members/:id', (req, res) => {
-    res.send(members[(req.params.id) - 1]);
+    // res.send(members[(req.params.id) - 1]);
+    // console.log(getIndex(req.params.id));
+    const index = getIndex(req.params.id);
+    if (Number.isInteger(index)) {
+        res.json(success(members[index]));
+    } else {
+        res.json(error(index));
+    }
+
 });
 app.get('/members', (req, res) => {
     if (req.query.max != undefined && req.query.max > 0) {
@@ -46,21 +55,35 @@ app.get('/members', (req, res) => {
     }
 });
 app.post('/members', (req, res) => {
-    console.log(req.body);
-    res.send(req.body.name)
+    if (req.body.name) {
+        let member = {
+            id: members.length + 1,
+            name: req.body.name
+        };
+        const index = members.findIndex(el => {
+            return el.name === member.name;
+        });
+        if (index !== -1) {
+            res.json(error('name already taken'))
+        } else {
+            members.push(member);
+            res.json(success(member));
+        }
+
+    } else {
+        res.json(error('No name value'));
+    }
+
 })
 
-function success(result) {
-    return {
-        status: 'success',
-        result
-    }
-}
-
-function error(message) {
-    return {
-        status: 'error',
-        message
+function getIndex(id) {
+    const index = members.findIndex(el => {
+        return parseInt(el.id) === parseInt(id);
+    });
+    if (index === -1) {
+        return 'Wrong index';
+    } else {
+        return index;
     }
 }
 
