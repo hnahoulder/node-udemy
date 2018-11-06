@@ -1,0 +1,9 @@
+POST http://localhost:8080/members/
+Content-Type: application/json
+
+{
+    "name" : "JohnDoe",
+    "age" : 29
+}
+
+###
